@@ -8,8 +8,8 @@ metadata:
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/load-balancer-name: deivi-motors-alb
     alb.ingress.kubernetes.io/target-type: ip
-#    alb.ingress.kubernetes.io/subnets: "${SUBNET_1}, ${SUBNET_2}" #subnets publicas
-    alb.ingress.kubernetes.io/subnets: "subnet-05d4450a894ffae40,subnet-0bebbef14855029de" #subnets publicas para teste local
+    alb.ingress.kubernetes.io/subnets: "${SUBNET_1}, ${SUBNET_2}" #subnets publicas
+#    alb.ingress.kubernetes.io/subnets: "subnet-05d4450a894ffae40,subnet-0bebbef14855029de" #subnets publicas para teste local
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     alb.ingress.kubernetes.io/success-codes: "200"
 spec:

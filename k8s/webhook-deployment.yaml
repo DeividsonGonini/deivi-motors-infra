@@ -19,7 +19,7 @@ spec:
       serviceAccountName: deivi-motors-sa
       containers:
         - name: webhook
-          image: 404234478011.dkr.ecr.us-east-1.amazonaws.com/webhook:latest
+          image: 404234478011.dkr.ecr.us-east-1.amazonaws.com/deivimotors-webhook:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 9090
