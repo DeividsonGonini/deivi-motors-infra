@@ -1,0 +1,21 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+images:
+  - name: 404234478011.dkr.ecr.us-east-1.amazonaws.com/deivi-motors-service
+    newTag: latest
+  - name: 404234478011.dkr.ecr.us-east-1.amazonaws.com/webhook-service
+    newTag: latest
+
+resources:
+#  - deivi-motors-deployment.yaml
+#  - deivi-motors-service.yaml
+#  - webhook-deployment.yaml
+#  - webhook-service.yaml
+  - secretstore.yaml
+  - service-account.yaml
+  # COMENTAR PRA DEPLOY VIA GITHUB ACTION
+  # Utilizados apenas para deploy local
+  - namespace.yaml
+  - ingress-alb.yaml
+  - externalsecret.yaml

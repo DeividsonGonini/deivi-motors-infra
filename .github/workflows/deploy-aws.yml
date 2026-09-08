@@ -1,0 +1,113 @@
+name: Infra Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+env:
+  AWS_REGION: us-east-1
+  CLUSTER_NAME: eks-deivi-motors
+
+jobs:
+  backend:
+    name: Terraform Backend
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Apply S3 Backend
+        working-directory: s3-backend
+        run: |
+          terraform init -input=false
+          terraform apply -auto-approve
+
+  cluster:
+    name: Terraform Cluster
+    runs-on: ubuntu-latest
+    needs: backend
+
+    outputs:
+      subnet_1: ${{ steps.tf_outputs.outputs.subnet_1 }}
+      subnet_2: ${{ steps.tf_outputs.outputs.subnet_2 }}
+      secret_name: ${{ steps.tf_outputs.outputs.secret_name }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - uses: hashicorp/setup-terraform@v3
+
+      - name: Terraform Init
+        working-directory: terraform-cluster
+        run: terraform init -input=false
+
+      - name: Terraform Validate
+        working-directory: terraform-cluster
+        run: terraform validate
+
+      - name: Terraform Apply
+        working-directory: terraform-cluster
+        run: |
+          terraform apply -auto-approve \
+            -var="deivi_motors_mongo_db_user=${{ secrets.DEIVI_MOTORS_MONGO_DB_USER }}" \
+            -var="deivi_motors_mongo_db_password=${{ secrets.DEIVI_MOTORS_MONGO_DB_PASSWORD }}" \
+
+      - name: Export Terraform Outputs
+        id: tf_outputs
+        working-directory: terraform-cluster
+        run: |
+          echo "subnet_1=$(terraform output -raw aws_subnet_deivi-motors-subnet-public1_id)" >> $GITHUB_OUTPUT
+          echo "subnet_2=$(terraform output -raw aws_subnet_deivi-motors-subnet-public2_id)" >> $GITHUB_OUTPUT
+          echo "secret_name=$(terraform output -raw aws_secretsmanager_secret_name)" >> $GITHUB_OUTPUT
+
+  k8s:
+    name: Deploy Kubernetes
+    runs-on: ubuntu-latest
+    needs: cluster
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update kubeconfig
+        run: |
+          aws eks update-kubeconfig \
+            --region $AWS_REGION \
+            --name $CLUSTER_NAME
+
+      - name: Create namespace
+        working-directory: k8s
+        run: kubectl apply -f namespace.yaml
+
+      - name: Deploy Manifests
+        working-directory: k8s
+        env:
+          SUBNET_1: ${{ needs.cluster.outputs.subnet_1 }}
+          SUBNET_2: ${{ needs.cluster.outputs.subnet_2 }}
+          SECRET_NAME: ${{ needs.cluster.outputs.secret_name }}
+        run: |
+          envsubst < ingress-alb.yaml | kubectl apply -f -
+          envsubst < externalsecret.yaml | kubectl apply -f -
+
+      - name: Deploy workloads
+        working-directory: k8s
+        run: kubectl apply -k .

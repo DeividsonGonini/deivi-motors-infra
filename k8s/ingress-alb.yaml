@@ -1,0 +1,32 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: deivi-motors-ingress
+  namespace: deivi-motors-k8s
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/load-balancer-name: deivi-motors-alb
+    alb.ingress.kubernetes.io/target-type: ip
+#    alb.ingress.kubernetes.io/subnets: "${SUBNET_1}, ${SUBNET_2}" #subnets publicas
+    alb.ingress.kubernetes.io/subnets: "subnet-05d4450a894ffae40,subnet-0bebbef14855029de" #subnets publicas para teste local
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    alb.ingress.kubernetes.io/success-codes: "200"
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /deivi_motors
+            pathType: Prefix
+            backend:
+              service:
+                name: deivi-motors-service
+                port:
+                  number: 8082
+          - path: /webhook
+            pathType: Prefix
+            backend:
+              service:
+                name: webhook-service
+                port:
+                  number: 9090
