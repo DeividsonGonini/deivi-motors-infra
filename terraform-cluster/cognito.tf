@@ -3,7 +3,7 @@ resource "aws_cognito_user_pool" "cognito" {
   name = "backend-app-user-pool"
 
   # Login utilizando email
-  username_attributes = ["email"]
+  # username_attributes = ["email"]
 
   # Verificação automática do email
   auto_verified_attributes = ["email"]
