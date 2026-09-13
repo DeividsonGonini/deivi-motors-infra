@@ -1,5 +1,5 @@
 resource "aws_secretsmanager_secret" "secrets_db" {
-  name        = "deivi-motors/databaseprojects"
+  name        = "deivi-motors/databaseprojects-1"
   description = "Configurações banco de dados dos serviços de deivi-motors"
 
   tags = {

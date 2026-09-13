@@ -4,9 +4,9 @@ Infraestrutura do projeto de processamento de vídeos na AWS, com provisionament
 
 ## Estrutura
 
-- `s3-backend/`: recursos S3 usados no projeto, incluindo bucket de processamento de vídeos.
-- `terraform-cluster/`: infraestrutura base na AWS, como VPC, subnets, EKS, ALB Controller, External Secrets, Cognito, SQS, SES e Secrets Manager.
-- `k8s/`: manifests dos serviços `deivi-motors` e `webhook`, além de service account, services e integrações com secrets.
+- `s3-backend/`: recurso S3 utilizado para guardar os terraform.tfstate no projeto.
+- `terraform-cluster/`: infraestrutura base na AWS, como VPC, subnets, EKS, ALB Controller, Cognito e Secrets Manager.
+- `k8s/`: manifestos do kubernets, service account, external secrets, ingress-alb, namespace e integrações com secret manager da AWS.
 
 ## Ordem sugerida de execução
 
@@ -34,4 +34,5 @@ kubectl apply -k .
 
 - Os manifests apontam para imagens no ECR da região `us-east-1`.
 - Os deployments consomem o secret `deivi-motors-db-secret` para credenciais do MongoDB.
-- `namespace.yaml`, `ingress-alb.yaml` e `externalsecret.yaml` estão comentados no `kustomization.yaml` para alguns fluxos de deploy.
+- `namespace.yaml`, `ingress-alb.yaml` e `externalsecret.yaml` estão comentados no `kustomization.yaml` para o fluxo de deploy via GitAction, **descomente** para deploy local.
+- O `Secret Manager` demora para ser excluído totalmente da AWS, sempre que for fazer um novo deploy completo, a sugestão é alterar o nome.
