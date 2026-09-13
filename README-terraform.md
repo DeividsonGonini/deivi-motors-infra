@@ -9,8 +9,11 @@ atualizar os seg
 Sequencia:
 1 - Criar a infra terraform para salvar os arquivos .tf da pasta s3-backend
 2 - Criar a infra terraform com os recursos base da pasta terraform-cluster
-3 - Criar a infra terraform da pasta gateway (repositório do Gateway)
-4 - Criar a infra Kubernetes da pasta K8s
+3 - Criar a infra Kubernetes da pasta K8s
+4 - Criar a infra terraform da pasta gateway (repositório do Gateway)
+5 - Criar a infra do banco de dados(repositório do Gateway)
+6 - Criar os services Kubernetes da pasta K8s (repositório do Service)
+
 
 ```bash
 terraform apply --auto-approve
@@ -71,7 +74,7 @@ kubectl get pods -n deivi-motors-k8s
 
 Log do Pod
 ```bash
-kubectl logs deivi-motors-65855d4489-6crj6 -n deivi-motors-k8s
+kubectl logs deivi-motors-67d69b57b6-p9jkw -n deivi-motors-k8s
 ```
 
 ```bash
@@ -115,6 +118,14 @@ kubectl rollout restart deployment deivi-motors -n deivi-motors-k8s
 
 # Deletar a Infraestrutura
 Executar o Apply na raiz para criar a infraestrutura basica
+Sequencia Inversa da criação:
+6 - Destruir os services Kubernetes da pasta K8s (repositório do Service)
+5 - Destruir a infra do banco de dados(repositório do banco de dados)
+4 - Destruir a infra terraform da pasta gateway (repositório do Gateway)
+3 - Destruir a infra Kubernetes da pasta K8s
+2 - Destruir a infra terraform com os recursos base da pasta terraform-cluster
+1 - Destruir a infra terraform para salvar os arquivos .tf da pasta s3-backend
+
 Sequencia:
 
 ### 1 - Destruir a infra terraform da pasta gateway
